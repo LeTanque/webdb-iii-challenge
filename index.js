@@ -50,18 +50,17 @@ server.get('/api/cohorts', async (req, res) => {
     }
 });
 
-// // list a role by id
-// server.get('/api/roles/:id', async (req, res) => {
-// // get the roles from the database
-//     try {
-//         const role = await db('roles')
-//         .where({ id: req.params.id })
-//         .first();
-//         res.status(200).json(role);
-//     } catch (error) {
-//         res.status(500).json(error);
-//     }
-// });
+// list a cohort by id
+server.get('/api/cohorts/:id', async (req, res) => {
+    try {
+        const cohort = await db('cohorts')
+        .where({ id: req.params.id })
+        .first();
+        res.status(200).json(cohort);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
 
 // const errors = {
 //     '19': 'Another record with that value exists',
