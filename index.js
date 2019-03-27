@@ -33,6 +33,12 @@ const db = knex(knexConfig);
 // Variables
 const port = process.env.PORT || 5000;
 const server = express();
+const errors = { // Dynamic messaging based on sqlite codes
+    '1': 'We ran into an error.',
+    '4': 'Operation aborted',
+    '9': 'Operation aborted',
+    '19': 'Another record with that value exists, yo!'
+};
 
 // Middleware
 server.use(helmet());
@@ -40,7 +46,7 @@ server.use(express.json());
 
 
 // Endpoints
-// Get all cohorts
+// GET all cohorts
 server.get('/api/cohorts', async (req, res) => {
     try {
         const cohorts = await db('cohorts');
@@ -50,71 +56,96 @@ server.get('/api/cohorts', async (req, res) => {
     }
 });
 
-// list a cohort by id
+
+// GET a cohort by id
 server.get('/api/cohorts/:id', async (req, res) => {
     try {
         const cohort = await db('cohorts')
-        .where({ id: req.params.id })
-        .first();
+            .where({ id: req.params.id })
+            .first();
         res.status(200).json(cohort);
     } catch (error) {
         res.status(500).json(error);
     }
 });
 
-// const errors = {
-//     '19': 'Another record with that value exists',
-// };
 
-// // create roles
-// server.post('/api/roles', async (req, res) => {
-//     try {
-//         const [id] = await db('roles').insert(req.body);
+// GET students in cohort by cohort ID
+server.get('/api/cohorts/:id/students', async (req, res) => {
+    try {
+        const cohortStudents = await db('cohorts')
+            .innerJoin('students', `cohorts.id`, 'students.cohort_id')
+            .where('students.id', req.params.id)
+        if (cohortStudents.length < 1) {
+            return res.status(404).json({ message:"No students in given cohort" })
+        }
+        res.status(200).json(cohortStudents)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+});
 
-//         const role = await db('roles')
-//         .where({ id })
-//         .first();
 
-//         res.status(201).json(role);
-//     } catch (error) {
-//         const message = errors[error.errno] || 'We ran into an error';
-//         res.status(500).json({ message, error });
-//     }
-// });
+// POST create new cohort. Name is required.
+server.post('/api/cohorts', async (req, res) => {
+    if (!req.body.name) { return res.status(400).json({ message:"Please include a name to create a new cohort" })}
+    try {
+        const [id] = await db('cohorts').insert(req.body);
+        const cohort = await db('cohorts')
+            .where({ id })
+            .first();
+        res.status(201).json(cohort);
+    } catch (error) {
+        const message = errors[error.errno] || 'We ran into an error';
+        res.status(500).json({ message });
+    }
+});
 
-// // update roles
-// server.put('/api/roles/:id', async (req, res) => {
-//     try {
-//         const count = await db('roles')
-//         .where({ id: req.params.id })
-//         .update(req.body);
 
-//         if (count > 0) {
-//         const role = await db('roles')
-//             .where({ id: req.params.id })
-//             .first();
+// PUT update without name param
+server.put('/api/cohorts', async (req, res) => {
+    res.status(400).json({ message:"Please include cohort ID to update" })
+})
 
-//         res.status(200).json(role);
-//         } else {
-//         res.status(404).json({ message: 'Records not found' });
-//         }
-//     } catch (error) {}
-// });
 
-// // remove roles (inactivate the role)
-// server.delete('/api/roles/:id', async (req, res) => {
-//     try {
-//         const count = await db('roles')
-//         .where({ id: req.params.id })
-//         .del();
+// PUT update cohort. body name required. Must be unique req.body.name
+server.put('/api/cohorts/:id', async (req, res) => {
+    if (!req.body.name) { return res.status(400).json({ message:"Please include a name to update a cohort" })}
+    try {
+        const count = await db('cohorts')
+            .where({ id: req.params.id })
+            .update(req.body);
+        if (count > 0) {
+            const cohort = await db('cohorts')
+                .where({ id: req.params.id })
+                .first();
+            res.status(200).json(cohort);
+        } else {
+            res.status(404).json({ message: 'Records not found' });
+        }
+    } catch (error) {
+        const message = errors[error.errno] || 'We ran into an error';
+        res.status(500).json({ message });
+    }
+});
 
-//         if (count > 0) {
-//         res.status(204).end();
-//         } else {
-//         res.status(404).json({ message: 'Records not found' });
-//         }
-//     } catch (error) {}
-// });
+
+// DELETE remove cohort
+server.delete('/api/cohorts/:id', async (req, res) => {
+    try {
+        const count = await db('cohorts')
+            .where({ id: req.params.id })
+            .del();
+        if (count > 0) {
+            res.status(204).end();
+        } else {
+            res.status(404).json({ message: 'Cohort not found' });
+        }
+    } catch (error) {
+        const message = errors[error.errno] || 'We ran into an error';
+        res.status(500).json({ message });
+    }
+});
   
 
 
