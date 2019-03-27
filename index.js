@@ -11,7 +11,7 @@ const knex = require('knex');
 // yarn knex init                               // creates config file empty
 // yarn knex migrate:make roles_table           // makes a migration roles_table
 // yarn knex migrate:latest                     // updates to latest migration
-// yarn knex migrate:rollback                   // Rollback migration
+// yarn knex migrate:rollback                   // Rollback migration. rollback will revert to most recent batch. 
 // yarn knex migrate:make fix_roles_latinName   // makes a migration called fix_roles_latinName
 //
 // Seed files allow you to populate your database with test or seed data independent of your migration files.
@@ -40,12 +40,83 @@ server.use(express.json());
 
 
 // Endpoints
+// Get all cohorts
+server.get('/api/cohorts', async (req, res) => {
+    try {
+        const cohorts = await db('cohorts');
+        res.status(200).json(cohorts);
+    } catch (error) {
+        res.status(500).json(error);
+    }
+});
 
+// // list a role by id
+// server.get('/api/roles/:id', async (req, res) => {
+// // get the roles from the database
+//     try {
+//         const role = await db('roles')
+//         .where({ id: req.params.id })
+//         .first();
+//         res.status(200).json(role);
+//     } catch (error) {
+//         res.status(500).json(error);
+//     }
+// });
 
+// const errors = {
+//     '19': 'Another record with that value exists',
+// };
 
+// // create roles
+// server.post('/api/roles', async (req, res) => {
+//     try {
+//         const [id] = await db('roles').insert(req.body);
 
+//         const role = await db('roles')
+//         .where({ id })
+//         .first();
 
+//         res.status(201).json(role);
+//     } catch (error) {
+//         const message = errors[error.errno] || 'We ran into an error';
+//         res.status(500).json({ message, error });
+//     }
+// });
 
+// // update roles
+// server.put('/api/roles/:id', async (req, res) => {
+//     try {
+//         const count = await db('roles')
+//         .where({ id: req.params.id })
+//         .update(req.body);
+
+//         if (count > 0) {
+//         const role = await db('roles')
+//             .where({ id: req.params.id })
+//             .first();
+
+//         res.status(200).json(role);
+//         } else {
+//         res.status(404).json({ message: 'Records not found' });
+//         }
+//     } catch (error) {}
+// });
+
+// // remove roles (inactivate the role)
+// server.delete('/api/roles/:id', async (req, res) => {
+//     try {
+//         const count = await db('roles')
+//         .where({ id: req.params.id })
+//         .del();
+
+//         if (count > 0) {
+//         res.status(204).end();
+//         } else {
+//         res.status(404).json({ message: 'Records not found' });
+//         }
+//     } catch (error) {}
+// });
+  
 
 
 // Server console

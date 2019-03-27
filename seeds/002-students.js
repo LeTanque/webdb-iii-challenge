@@ -5,7 +5,8 @@ exports.seed = function(knex) {
     .then(() => {
       return knex('students').insert([
         {name: 'Hack the Gibson'},
-        {name: 'Nick the NSA'}
+        {name: 'Nick the NSA'},
+        {name: 'Frank Martinez', cohort_id:3}
       ]);
     });
 };
