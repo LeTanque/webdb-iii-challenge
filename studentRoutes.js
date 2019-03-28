@@ -110,7 +110,7 @@ router.delete('/:id', async (req, res) => {
         if (count > 0) {
             res.status(204).end();
         } else {
-            res.status(404).json({ message:"student not found" });
+            res.status(404).json({ message:"Student not found" });
         }
     } catch (error) {
         const message = errors[error.errno] || "We ran into an error";
