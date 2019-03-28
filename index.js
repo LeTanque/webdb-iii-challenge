@@ -2,7 +2,7 @@
 const express = require('express');
 const helmet = require('helmet');
 const knex = require('knex');
-
+const students = require('./studentRoutes.js');
 
 // Knex CLI commands
 // knex is not installed globally so all commands are prepended with yarn or npx
@@ -26,14 +26,14 @@ const knexConfig = {
       filename: './data/lambda.sqlite3',
     },
     useNullAsDefault: true,             // needed for sqlite
-    debug: true,                        // Useful for development
+    // debug: true,                        // Useful for development
 };
 const db = knex(knexConfig);
 
 // Variables
 const port = process.env.PORT || 5000;
 const server = express();
-const errors = { // Dynamic messaging based on sqlite codes
+const errors = { // Dynamic error messaging based on sqlite codes
     '1': 'We ran into an error.',
     '4': 'Operation aborted',
     '9': 'Operation aborted',
@@ -43,6 +43,7 @@ const errors = { // Dynamic messaging based on sqlite codes
 // Middleware
 server.use(helmet());
 server.use(express.json());
+server.use('/students', students);
 
 
 // Endpoints
@@ -146,10 +147,12 @@ server.delete('/api/cohorts/:id', async (req, res) => {
         res.status(500).json({ message });
     }
 });
-  
+
 
 
 // Server console
 server.listen(port, () =>
   console.log(`\n\n--- API running on localhost:${port} ---`)
 );
+
+
